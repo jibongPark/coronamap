@@ -1,91 +1,78 @@
 <template>
-  <div id="contents">
-     <input type="text" placeholder="title" v-model="title">
-     <input type="text" placeholder="author" v-model="author">
-     <button @click="fromSubmit()">submit</button>
-
-    <naver-maps
-      :height="height"
-      :width="width"
-      :mapOptions="mapOptions"
-      :initLayers="initLayers"
-      @load="onLoad">
-      <naver-info-window
-        class="info-window"
-        @load="onWindowLoad"
-        :isOpen="info"
-        :marker="marker">
-        <div class="info-window-container">
-          <h1>{{hello}}</h1>
+  <div class="out">
+    <navbar />
+    <div class="in">
+      <div class="columns" style="margin-bottom: 1.5rem">
+        <div class="column">
+          <navermap :nameOfChild = data> </navermap>
+          <!-- <input v-model="msg">
+          <dynamic-props :message="msg" /> -->
         </div>
-      </naver-info-window>
-      <naver-marker :lat="37" :lng="127" @click="onMarkerClicked" @load="onMarkerLoaded"/>
-    </naver-maps>
+        <div class="column">
+          <covid19all />
+          <covidslide :nameOfChild = data> </covidslide>
+
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
+
+
 <script>
 
-export default {
-  name: 'app',
-  data () {
-    return {
-      title:'',
-      author:'',
-      output:'',
 
-      width: 800,
-      height: 800,
-      info: false,
-      marker: null,
-      count: 1,
-      map: null,
-      isCTT: false,
-      mapOptions: {
-        lat: 37,
-        lng: 127,
-        zoom: 10,
-        zoomControl: true,
-        zoomControlOptions: {position: 'TOP_RIGHT'},
-        mapTypeControl: true,
-      },
-      initLayers: ['BACKGROUND', 'BACKGROUND_DETAIL', 'POI_KOREAN', 'TRANSIT', 'ENGLISH', 'CHINESE', 'JAPANESE']
-    }
+import navbar from "./components/navbar";
+import navermap from "./components/navermap";
+import covid19all from "./components/covid19all";
+
+import covidslide from "./components/covidslide";
+
+export default {
+
+  
+  name: "app",
+  components: {
+    navbar,
+    'navermap' : navermap,
+    covid19all,
+    covidslide,
   },
-  computed: {
-    hello() {
-      return `Hello, World! × ${this.count}`;
+  data: function () {
+    return {
+      msg: 'test',
+      data: ""
     }
   },
   methods: {
-    fromSubmit () {
-      this.$axios.get('http://localhost:9090/coronamap/all?startCreateDt=20201204&endCreateDt=20201205')
-      .then(res => {
-        console.log(res.data)
-      })
+    readCovid19Sido() {
+      this.$axios
+        .get(
+          "http://localhost:9090/coronamap/sido?startCreateDt=" +
+            String(this.$moment().subtract(2, "days").format("YYYYMMDD")) +
+            "&endCreateDt=" +
+            String(this.$moment().format("YYYYMMDD"))
+            
+        )
+        .then((res) => {
+          this.data = res;
+        })
 
-    },
-  onLoad(vue){
-    this.map = vue;
-    },
-  onWindowLoad(that) {
-    },
-  onMarkerClicked(event) {
-    this.info = !this.info;
-    },
-  onMarkerLoaded(vue) {
-    this.marker = vue.marker;
     }
+  },
+  created () {
+    this.readCovid19Sido();
   }
-
 }
-
 </script>
 
 <style scoped>
-  .info-window-container {
-    padding: 10px;
-    width: 300px;
-    height: 100px;
-  }
+.in {
+  display: block;
+  width: 50%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 </style>
